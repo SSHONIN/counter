@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     background_color:"#0f0f0f", theme_color:"#0f0f0f",
     orientation:"portrait",
     icons:[
-      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%230f0f0f'/><text y='140' x='96' font-size='110' text-anchor='middle'>🚬</text></svg>",sizes:"192x192",type:"image/svg+xml"},
-      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230f0f0f'/><text y='370' x='256' font-size='290' text-anchor='middle'>🚬</text></svg>",sizes:"512x512",type:"image/svg+xml"}
+      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%230f0f0f'/><text y='150' x='96' font-size='160' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='900'>%2B</text></svg>",sizes:"192x192",type:"image/svg+xml"},
+      {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230f0f0f'/><text y='400' x='256' font-size='420' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='900'>%2B</text></svg>",sizes:"512x512",type:"image/svg+xml"}
     ]
   };
   const blob = new Blob([JSON.stringify(m)],{type:'application/json'});
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 :root {
   --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#242424;
   --border:#2e2e2e; --text:#e8e8e8; --muted:#666;
-  --smoke:#c8b89a; --beer:#e8a020; --nonal:#5bbfaa;
+  --smoke:#c8b89a; --beer:#e8a020; --nonal:#5bbfaa; --game:#a78bfa;
   --accent:#ffffff; --danger:#ff4444;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -64,6 +64,7 @@ body{
 .counter-card.smoke::before{background:var(--smoke);}
 .counter-card.beer::before{background:var(--beer);}
 .counter-card.nonal::before{background:var(--nonal);}
+.counter-card.game::before{background:var(--game);}
 
 .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .card-label{display:flex;align-items:center;gap:8px;}
@@ -87,6 +88,11 @@ body{
 .counter-card.smoke .count-num{color:var(--smoke);}
 .counter-card.beer  .count-num{color:var(--beer);}
 .counter-card.nonal .count-num{color:var(--nonal);}
+.counter-card.game  .count-num{color:var(--game);}
+.counter-card.smoke::before{background:var(--smoke);}
+.counter-card.beer::before{background:var(--beer);}
+.counter-card.nonal::before{background:var(--nonal);}
+.counter-card.game::before{background:var(--game);}
 .count-cost{font-size:12px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:2px;}
 
 .total-section{margin:4px 16px 0;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 20px;}
@@ -207,6 +213,23 @@ body{
         <button class="btn-plus" onclick="change('nonal',1)">＋</button>
       </div>
     </div>
+
+    <div class="counter-card game">
+      <div class="card-header">
+        <div class="card-label">
+          <span class="card-icon">🎮</span>
+          <div><div class="card-name">スレスパ2</div><div class="card-unit">プレイ回数</div></div>
+        </div>
+      </div>
+      <div class="counter-row">
+        <button class="btn-minus" onclick="change('game',-1)">−</button>
+        <div class="counter-value">
+          <div class="count-num" id="gameCount">0</div>
+          <div class="count-cost" id="gameCost">回</div>
+        </div>
+        <button class="btn-plus" onclick="change('game',1)">＋</button>
+      </div>
+    </div>
   </div>
 
   <div class="total-section">
@@ -231,6 +254,7 @@ body{
         <div class="stat-row"><span class="name">🚬</span><span class="val" id="w-smoke">0本</span></div>
         <div class="stat-row"><span class="name">🍺</span><span class="val" id="w-beer">0缶</span></div>
         <div class="stat-row"><span class="name">🥤</span><span class="val" id="w-nonal">0缶</span></div>
+        <div class="stat-row"><span class="name">🎮</span><span class="val" id="w-game">0回</span></div>
       </div>
       <div class="stat-cost" id="w-cost">¥0</div>
     </div>
@@ -240,6 +264,7 @@ body{
         <div class="stat-row"><span class="name">🚬</span><span class="val" id="m-smoke">0本</span></div>
         <div class="stat-row"><span class="name">🍺</span><span class="val" id="m-beer">0缶</span></div>
         <div class="stat-row"><span class="name">🥤</span><span class="val" id="m-nonal">0缶</span></div>
+        <div class="stat-row"><span class="name">🎮</span><span class="val" id="m-game">0回</span></div>
       </div>
       <div class="stat-cost" id="m-cost">¥0</div>
     </div>
@@ -283,7 +308,7 @@ body{
 
 <script>
 const PRICE_DEFAULT={smoke:31,beer:500,nonal:130};
-const dateKey=()=>new Date().toISOString().slice(0,10);
+const dateKey=()=>{const n=new Date();if(n.getHours()<4)n.setDate(n.getDate()-1);return n.toISOString().slice(0,10)};
 
 function loadData(){try{return JSON.parse(localStorage.getItem('ctr_data')||'{}')}catch{return {}}}
 function saveData(d){localStorage.setItem('ctr_data',JSON.stringify(d))}
@@ -300,8 +325,9 @@ function savePrices(){
 
 function todayEntry(){
   const d=loadData(), k=dateKey();
-  if(!d[k]) d[k]={smoke:0,beer:0,nonal:0};
+  if(!d[k]) d[k]={smoke:0,beer:0,nonal:0,game:0};
   if(d[k].nonal===undefined) d[k].nonal=0;
+  if(d[k].game===undefined)  d[k].game=0;
   return {data:d,key:k};
 }
 
@@ -327,9 +353,11 @@ function render(){
   document.getElementById('smokeCount').textContent=t.smoke;
   document.getElementById('beerCount').textContent =t.beer;
   document.getElementById('nonalCount').textContent=t.nonal;
+  document.getElementById('gameCount').textContent =t.game;
   document.getElementById('smokeCost').textContent =fmt(t.smoke*prices.smoke);
   document.getElementById('beerCost').textContent  =fmt(t.beer *prices.beer);
   document.getElementById('nonalCost').textContent =fmt(t.nonal*prices.nonal);
+  document.getElementById('gameCost').textContent  =t.game+'回';
 
   const total=t.smoke*prices.smoke+t.beer*prices.beer+t.nonal*prices.nonal;
   document.getElementById('totalAmount').textContent=fmt(total);
@@ -337,6 +365,7 @@ function render(){
   if(t.smoke) parts.push('🚬 '+t.smoke+'本  '+fmt(t.smoke*prices.smoke));
   if(t.beer)  parts.push('🍺 '+t.beer +'缶  '+fmt(t.beer *prices.beer));
   if(t.nonal) parts.push('🥤 '+t.nonal+'缶  '+fmt(t.nonal*prices.nonal));
+  if(t.game)  parts.push('🎮 '+t.game +'回');
   document.getElementById('totalBreakdown').textContent=parts.join('\n')||'—';
 
   document.getElementById('smokePriceInput').value=prices.smoke;
@@ -345,26 +374,29 @@ function render(){
   renderStats(data,prices);
 }
 
+function statsDateKey(d){const n=new Date(d);if(n.getHours()<4)n.setDate(n.getDate()-1);return n.toISOString().slice(0,10)}
 function renderStats(data,prices){
   const now=new Date();
-  let wS=0,wB=0,wN=0;
+  let wS=0,wB=0,wN=0,wG=0;
   for(let i=0;i<7;i++){
     const d=new Date(now);d.setDate(d.getDate()-i);
-    const k=d.toISOString().slice(0,10);
-    if(data[k]){wS+=data[k].smoke||0;wB+=data[k].beer||0;wN+=data[k].nonal||0;}
+    const k=statsDateKey(d);
+    if(data[k]){wS+=data[k].smoke||0;wB+=data[k].beer||0;wN+=data[k].nonal||0;wG+=data[k].game||0;}
   }
   const mp=now.toISOString().slice(0,7);
-  let mS=0,mB=0,mN=0;
+  let mS=0,mB=0,mN=0,mG=0;
   Object.keys(data).filter(k=>k.startsWith(mp)).forEach(k=>{
-    mS+=data[k].smoke||0;mB+=data[k].beer||0;mN+=data[k].nonal||0;
+    mS+=data[k].smoke||0;mB+=data[k].beer||0;mN+=data[k].nonal||0;mG+=data[k].game||0;
   });
   document.getElementById('w-smoke').textContent=wS+'本';
   document.getElementById('w-beer').textContent =wB+'缶';
   document.getElementById('w-nonal').textContent=wN+'缶';
+  document.getElementById('w-game').textContent =wG+'回';
   document.getElementById('w-cost').textContent =fmt(wS*prices.smoke+wB*prices.beer+wN*prices.nonal);
   document.getElementById('m-smoke').textContent=mS+'本';
   document.getElementById('m-beer').textContent =mB+'缶';
   document.getElementById('m-nonal').textContent=mN+'缶';
+  document.getElementById('m-game').textContent =mG+'回';
   document.getElementById('m-cost').textContent =fmt(mS*prices.smoke+mB*prices.beer+mN*prices.nonal);
 
   const hist=document.getElementById('historyList');
@@ -373,19 +405,19 @@ function renderStats(data,prices){
   for(let i=0;i<7;i++){
     const d=new Date(now);d.setDate(d.getDate()-i);
     const k=d.toISOString().slice(0,10);
-    const e=data[k]||{smoke:0,beer:0,nonal:0};
+    const e=data[k]||{smoke:0,beer:0,nonal:0,game:0};
     const cost=(e.smoke||0)*prices.smoke+(e.beer||0)*prices.beer+(e.nonal||0)*prices.nonal;
     const label=i===0?'今日':`${d.getMonth()+1}/${d.getDate()}(${days[d.getDay()]})`;
     const row=document.createElement('div');
     row.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-family:"DM Mono",monospace;font-size:11px;gap:6px;';
-    row.innerHTML=`<span style="color:var(--muted);flex-shrink:0">${label}</span><span style="flex:1;text-align:center">🚬${e.smoke||0} 🍺${e.beer||0} 🥤${e.nonal||0}</span><span style="font-weight:500;flex-shrink:0">${fmt(cost)}</span>`;
+    row.innerHTML=`<span style="color:var(--muted);flex-shrink:0">${label}</span><span style="flex:1;text-align:center">🚬${e.smoke||0} 🍺${e.beer||0} 🥤${e.nonal||0} 🎮${e.game||0}</span><span style="font-weight:500;flex-shrink:0">${fmt(cost)}</span>`;
     hist.appendChild(row);
   }
 }
 
 function resetToday(){
   if(!confirm('今日のカウントをリセットしますか？'))return;
-  const {data,key}=todayEntry();data[key]={smoke:0,beer:0,nonal:0};saveData(data);render();
+  const {data,key}=todayEntry();data[key]={smoke:0,beer:0,nonal:0,game:0};saveData(data);render();
 }
 function resetAll(){
   if(!confirm('全データを削除します。よろしいですか？'))return;
